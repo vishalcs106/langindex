@@ -4,6 +4,17 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("de.undercouch.download") version "5.4.0"
+    id("maven-publish")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+            }
+        }
+    }
 }
 
 android {
