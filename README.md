@@ -55,7 +55,7 @@ val langIndex = LangIndex.Builder()
 ### 2. Process a Message
 
 ```kotlin
-val result = langIndex.processMessage("Tell me about Deadpool")
+val result = langIndex.retrieveChunks("Tell me about Deadpool", storeQuery = false)
 ```
 
 ### 3. Access Results
@@ -70,7 +70,7 @@ val retrievedChunks: List<String> = result.retrievedChunks
 
 ```kotlin
 val langIndex = LangIndex.Builder().build(context)
-val result = langIndex.processMessage("Tell me about Deadpool")
+val result = langIndex.retrieveChunks("Tell me about Deadpool")
 
 Log.d("Tokens", result.tokens.toString())
 Log.d("Embedding", result.embedding.joinToString())
