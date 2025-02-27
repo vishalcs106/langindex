@@ -12,8 +12,19 @@ class LangIndex private constructor(
     private val repository: ILangIndexRepository
 ) {
 
-    fun processMessage(message: String): ProcessMessageResult {
-        return repository.processMessage(message)
+    /**
+     * Stores a new message embedding in the local database.
+     */
+    fun ingestMessage(message: String) {
+        repository.ingestMessage(message)
+    }
+
+    /**
+     * Retrieves relevant stored chunks for a given query.
+     * If storeQuery is true, the query embedding will also be stored.
+     */
+    fun retrieveChunks(query: String, storeQuery: Boolean): ProcessMessageResult {
+        return repository.retrieveChunks(query, storeQuery)
     }
 
     class Builder {

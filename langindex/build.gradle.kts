@@ -46,8 +46,6 @@ android {
     }
 }
 
-
-
 val assetDir = "${projectDir}/src/main/assets"
 
 tasks.register<Download>("downloadMobileBertModel") {
@@ -75,7 +73,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.jtokkit)
     implementation(libs.tasks.text)
-    debugImplementation("io.objectbox:objectbox-android-objectbrowser:4.1.0")
-    releaseImplementation("io.objectbox:objectbox-android:4.1.0")
+    debugImplementation(libs.objectbox.android.objectbrowser)
+    releaseImplementation(libs.objectbox.android)
 }
 apply(plugin = "io.objectbox")

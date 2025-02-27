@@ -9,8 +9,6 @@ import ai.langindex.data.local.LangIndexStore
 import ai.langindex.domain.model.ProcessMessageResult
 import ai.langindex.domain.repository.ILangIndexRepository
 import android.content.Context
-import android.util.Log
-import kotlin.random.Random
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedderResult
 import java.util.Locale
@@ -19,7 +17,7 @@ import java.util.Locale
 class LangIndexRepositoryImpl(
     private val tokenizer: Tokenizer,
     private val context: Context,
-    private val modelType: ModelType = ModelType.MOBILE_BERT
+    private val modelType: ModelType = ModelType.AVERAGE_WORD
 ) : ILangIndexRepository {
 
     private val textEmbedder: TextEmbedder by lazy {
@@ -30,36 +28,16 @@ class LangIndexRepositoryImpl(
         TextEmbedder.createFromFile(context, modelFileName)
     }
 
-    override fun processMessage(message: String): ProcessMessageResult {
-        // 1. Tokenize message
+    override fun ingestMessage(message: String) {
         val input = message.lowercase(Locale.US)
-        val tokens = tokenizer.tokenize(input)
-        Log.d("Input", "Text: ${input}")
         val embeddingResult: TextEmbedderResult = textEmbedder.embed(input)
         val embeddingVector = embeddingResult.embeddingResult().embeddings()
             .firstOrNull()
             ?.floatEmbedding()
             ?: throw IllegalStateException("Failed to generate embeddings")
 
-        // 3. Store in ObjectBox
+
         val box = LangIndexStore.getEmbeddingBox()
-
-
-        // 4. Retrieve all existing embeddings from ObjectBox
-        val allEmbeddings = LangIndexStore.getEmbeddingBox().all
-
-        // 5. Calculate similarity with all stored embeddings
-        val similarChunks = allEmbeddings.map { entity ->
-            val storedEmbedding = entity.embedding.toFloatArray()
-            val similarity = SimilarityCalculator.cosineSimilarity(embeddingVector, storedEmbedding)
-            Log.d("SIMILARITY", "Text: ${entity.textChunk}, Similarity: $similarity StoredEmb: ${storedEmbedding.toByteArray()}")
-            Pair(entity.textChunk, similarity)
-        }
-            .sortedByDescending { it.second }
-            .take(3)
-
-        // 6. Extract most similar text chunks
-        val retrievedChunks = similarChunks.map { it.first }
 
         val existing = box.query()
             .equal(EmbeddingEntity_.embedding, embeddingVector.toByteArray())
@@ -74,13 +52,6 @@ class LangIndexRepositoryImpl(
                 )
             )
         }
-
-        // 7. Return result containing tokens, embeddings, and similar chunks
-        return ProcessMessageResult(
-            tokens = tokens,
-            embedding = embeddingVector,
-            retrievedChunks = retrievedChunks
-        )
     }
 
     private fun ByteArray.toFloatArray(): FloatArray {
@@ -103,6 +74,52 @@ class LangIndexRepositoryImpl(
     }
 
     private fun ByteArray.toByteBuffer() = java.nio.ByteBuffer.wrap(this)
+
+    override fun retrieveChunks(message: String, storeMessage: Boolean): ProcessMessageResult {
+        val input = message.lowercase(Locale.ROOT)
+        val tokens = tokenizer.tokenize(input)
+        val embeddingResult: TextEmbedderResult = textEmbedder.embed(input)
+        val embeddingVector = embeddingResult.embeddingResult().embeddings()
+            .firstOrNull()
+            ?.floatEmbedding()
+            ?: throw IllegalStateException("Failed to generate embeddings")
+
+        val box = LangIndexStore.getEmbeddingBox()
+
+        val allEmbeddings = LangIndexStore.getEmbeddingBox().all
+
+
+        val similarChunks = allEmbeddings.map { entity ->
+            val storedEmbedding = entity.embedding.toFloatArray()
+            val similarity = SimilarityCalculator.cosineSimilarity(embeddingVector, storedEmbedding)
+
+            Pair(entity.textChunk, similarity)
+        }
+            .sortedByDescending { it.second }
+            .take(3)
+
+        val retrievedChunks = similarChunks.map { it.first }
+
+        val existing = box.query()
+            .equal(EmbeddingEntity_.embedding, embeddingVector.toByteArray())
+            .build()
+            .findFirst()
+
+        if (existing == null && storeMessage) {
+            box.put(
+                EmbeddingEntity(
+                    textChunk = input,
+                    embedding = embeddingVector.toByteArray()
+                )
+            )
+        }
+
+        return ProcessMessageResult(
+            tokens = tokens,
+            embedding = embeddingVector,
+            retrievedChunks = retrievedChunks
+        )
+    }
 }
 
 enum class ModelType {

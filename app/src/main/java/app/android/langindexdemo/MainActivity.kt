@@ -64,7 +64,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
     var lastEmbedding by remember { mutableStateOf<FloatArray?>(null) }
 
     val testInputs = listOf(
-        "Deadpool looks like wolvorine",
+        "Deadpool looks like wolverine",
         "Deadpool wears red suite",
         "Tell me about Marvel superheroes.",
         "What are embeddings in AI?",
@@ -77,10 +77,10 @@ fun MainScreen(modifier: Modifier = Modifier) {
     )
 
     testInputs.forEach { input ->
-        langIndex.processMessage(input)
+        langIndex.ingestMessage(input)
     }
 
-    val result = langIndex.processMessage("tell me about the Marvel character Deadpool.")
+    val result = langIndex.retrieveChunks("tell me about the Marvel character Deadpool.", false)
     Log.d("result", result.retrievedChunks.toString())
 
     Column(
@@ -108,7 +108,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
             onClick = {
                 if (inputText.text.isNotEmpty()) {
                     // Process the message
-                    retrievedChunks = langIndex.processMessage(inputText.text)
+                    retrievedChunks = langIndex.retrieveChunks(inputText.text, false)
                     Log.d("result2", retrievedChunks?.retrievedChunks.toString())
                 }
             }
