@@ -8,6 +8,8 @@ Built for privacy-first AI apps and offline AI agents. Optimized for integrating
 
 ---
 
+[![](https://jitpack.io/v/vishalcs106/langindex.svg)](https://jitpack.io/#vishalcs106/langindex)
+
 ## ⭐ Key Features
 
 - **On-Device Storage** – Stores embeddings using ObjectBox.
