@@ -40,8 +40,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":langindex"))
-    //implementation(libs.langindex)
+    //implementation(project(":langindex"))
+    implementation(libs.langindex)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
