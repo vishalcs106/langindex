@@ -39,7 +39,7 @@ Add LangIndex dependency to your `app/build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.vishalcs106:langindex:1.0.2")
+    implementation("com.github.vishalcs106:langindex:1.0.3")
 }
 ```
 
